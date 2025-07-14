@@ -20,3 +20,18 @@ export const validateRegistration = (
   });
   return schema.validate(data, { abortEarly: false });
 };
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export const validateLogin = (
+  data: LoginInput
+): Joi.ValidationResult<LoginInput> => {
+  const schema = Joi.object<LoginInput>({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  });
+  return schema.validate(data, { abortEarly: false });
+};

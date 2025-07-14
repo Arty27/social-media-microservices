@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
-import { validateRegistration } from "../utils/validations";
+import { validateLogin, validateRegistration } from "../utils/validations";
 import { logger } from "../utils/logger";
-import { registerService } from "../services/identity.service";
+import { loginService, registerService } from "../services/identity.service";
 
 // User Registration
-export const registerUserController = async (req: Request, res: Response) => {
+export const registerUserController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     logger.info("Register User");
     const { error } = validateRegistration(req.body);
@@ -12,11 +15,12 @@ export const registerUserController = async (req: Request, res: Response) => {
     if (error) {
       const errors: string[] = error.details.map((e) => e.message);
       logger.warn("Validation Failed during Registration", errors);
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "Validation Failed",
         errors,
       });
+      return;
     }
 
     const { accessToken, refreshToken } = await registerService(req.body);
@@ -37,7 +41,43 @@ export const registerUserController = async (req: Request, res: Response) => {
     });
   }
 };
-// User login
+
+// User login Controller
+export const loginUserController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    logger.info(`Login User`);
+    const { error } = validateLogin(req.body);
+    if (error) {
+      const errors: string[] = error.details.map((e) => e.message);
+      logger.warn("Validation Failed during Login", errors);
+      res.status(400).json({
+        success: false,
+        message: "Validation Failed",
+        errors,
+      });
+      return;
+    }
+    const { accessToken, refreshToken, userId } = await loginService(req.body);
+    res.status(200).json({
+      success: true,
+      message: "User Login Successful!",
+      accessToken,
+      refreshToken,
+      userId,
+    });
+  } catch (error) {
+    logger.error("Login error occured", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({
+      message,
+      success: false,
+    });
+  }
+};
 
 // Refresh Token
 
