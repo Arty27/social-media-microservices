@@ -28,9 +28,11 @@ export const registerUserController = async (req: Request, res: Response) => {
       refreshToken,
     });
   } catch (error) {
-    logger.error("Registration error occured", { error });
+    logger.error("Registration error occured", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
     res.status(500).json({
-      message: "Internal server error",
+      message,
       success: false,
     });
   }
