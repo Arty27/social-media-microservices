@@ -6,6 +6,7 @@ export const requestLogger = (
   res: Response,
   next: NextFunction
 ) => {
+  logger.divider();
   logger.info("Incoming request", {
     method: req.method,
     url: req.url,

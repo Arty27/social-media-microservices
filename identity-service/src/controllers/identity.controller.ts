@@ -7,8 +7,6 @@ import {
   refreshTokenService,
   registerService,
 } from "../services/identity.service";
-import { RefreshToken } from "../models/refresh-token.model";
-import { User } from "../models/user.model";
 
 // User Registration
 export const registerUserController = async (
@@ -121,7 +119,6 @@ export const refreshTokenController = async (
 };
 
 // Logout
-
 export const logoutController = async (
   req: Request,
   res: Response

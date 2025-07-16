@@ -12,7 +12,7 @@ identityRouter.post("/register", registerUserController);
 
 identityRouter.post("/login", loginUserController);
 
-identityRouter.post("/refreshToken", refreshTokenController);
+identityRouter.post("/refresh-token", refreshTokenController);
 
 identityRouter.post("/logout", logoutController);
 
