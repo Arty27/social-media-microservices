@@ -1,7 +1,13 @@
 import { Request, Response } from "express";
 import { validateLogin, validateRegistration } from "../utils/validations";
 import { logger } from "../utils/logger";
-import { loginService, registerService } from "../services/identity.service";
+import {
+  loginService,
+  refreshTokenService,
+  registerService,
+} from "../services/identity.service";
+import { RefreshToken } from "../models/refresh-token.model";
+import { User } from "../models/user.model";
 
 // User Registration
 export const registerUserController = async (
@@ -80,5 +86,37 @@ export const loginUserController = async (
 };
 
 // Refresh Token
+export const refreshTokenController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    logger.info("Refresh Token Hit");
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      logger.warn(`Refresh Token Missing in request body`);
+      res.status(400).json({
+        success: false,
+        message: "Refresh Token Missing",
+      });
+      return;
+    }
+
+    const tokenData = await refreshTokenService(refreshToken);
+
+    res.status(200).json({
+      success: true,
+      ...tokenData,
+    });
+  } catch (error) {
+    logger.error("Refresh Token error occured", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({
+      message,
+      success: false,
+    });
+  }
+};
 
 // Logout

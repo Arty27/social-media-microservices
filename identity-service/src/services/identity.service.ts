@@ -1,9 +1,14 @@
 import { IUserDocument, User } from "../models/user.model";
 import generateToken from "../utils/generate-token";
 import { logger } from "../utils/logger";
-import argon2 from "argon2";
 import { LoginInput, RegistrationInput } from "../utils/validations";
-import mongoose from "mongoose";
+import { RefreshToken } from "../models/refresh-token.model";
+
+export interface TokenOutput {
+  refreshToken: string;
+  accessToken: string;
+  userId: string;
+}
 
 export const registerService = async (userData: RegistrationInput) => {
   const { email, username, firstName, lastName, password } = userData;
@@ -51,5 +56,31 @@ export const loginService = async (
     accessToken,
     refreshToken,
     userId: existingUser._id as string,
+  };
+};
+
+export const refreshTokenService = async (
+  refreshToken: string
+): Promise<TokenOutput> => {
+  const storedToken = await RefreshToken.findOne({ token: refreshToken });
+  if (!storedToken || storedToken.expiresAt < new Date()) {
+    logger.warn(`Refresh Token expired or invalid !`);
+    throw new Error("Refresh Token invalid or expired");
+  }
+  const user = await User.findById(storedToken.user);
+  if (!user) {
+    logger.warn(`User not Found !`);
+    throw new Error("No User Found for the refresh token!");
+  }
+  const { refreshToken: newRefreshToken, accessToken } = await generateToken(
+    user
+  );
+  logger.info(`Refresh Token generated successfully for user`, {
+    userId: user._id,
+  });
+  return {
+    refreshToken: newRefreshToken,
+    accessToken,
+    userId: user._id as string,
   };
 };
