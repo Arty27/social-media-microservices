@@ -78,6 +78,11 @@ export const refreshTokenService = async (
   logger.info(`Refresh Token generated successfully for user`, {
     userId: user._id,
   });
+  //delete the old refresh token
+  await RefreshToken.deleteOne({ _id: storedToken._id });
+  logger.info(`Old refresh Tokens deleted from database for user`, {
+    userId: user._id,
+  });
   return {
     refreshToken: newRefreshToken,
     accessToken,
