@@ -89,3 +89,14 @@ export const refreshTokenService = async (
     userId: user._id as string,
   };
 };
+
+export const logoutService = async (refreshToken: string) => {
+  const storedToken = await RefreshToken.findOneAndDelete({
+    token: refreshToken,
+  });
+  if (!storedToken) {
+    logger.warn(`Refreshtoken not found`, { refreshToken });
+    throw new Error(`Invalid or expired Refresh Token`);
+  }
+  logger.info(`Refresh Token deleted for logout`, { userId: storedToken.user });
+};

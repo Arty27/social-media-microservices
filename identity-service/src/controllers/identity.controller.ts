@@ -3,6 +3,7 @@ import { validateLogin, validateRegistration } from "../utils/validations";
 import { logger } from "../utils/logger";
 import {
   loginService,
+  logoutService,
   refreshTokenService,
   registerService,
 } from "../services/identity.service";
@@ -120,3 +121,36 @@ export const refreshTokenController = async (
 };
 
 // Logout
+
+export const logoutController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    logger.info(`Logout Endpoint hit`);
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      logger.warn(`Refresh Token Missing in request body`);
+      res.status(400).json({
+        success: false,
+        message: "Refresh Token is required",
+      });
+      return;
+    }
+
+    await logoutService(refreshToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully!",
+    });
+  } catch (error) {
+    logger.error("Error occured while logging out", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({
+      message,
+      success: false,
+    });
+  }
+};
