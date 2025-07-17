@@ -24,7 +24,7 @@ app.use(express.json());
 
 app.use(requestLogger);
 
-app.use("./api/posts/", attachRedisClient, postRoutes);
+app.use("/api/posts/", attachRedisClient, postRoutes);
 
 app.use(errorHandler);
 

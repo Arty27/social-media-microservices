@@ -2,6 +2,7 @@ import { Post } from "../models/Post";
 import { createPostService, ICreatePostInput } from "../services/post.service";
 import { logger } from "../utils/logger";
 import { Request, Response } from "express";
+import { createPostValidation } from "../utils/validations";
 
 export const createPostController = async (
   req: Request,
@@ -9,10 +10,27 @@ export const createPostController = async (
 ): Promise<void> => {
   try {
     logger.info(`Create Post Endpoint Hit`);
+
+    const { error } = createPostValidation(req.body);
+    if (error) {
+      const errors: string[] = error.details.map((e) => e.message);
+      logger.warn("Validation Failed during Creating Post", errors);
+      res.status(400).json({
+        success: false,
+        message: "Validation Failed",
+        errors,
+      });
+      return;
+    }
     const postData: ICreatePostInput = {
+      user: req.user,
       ...req.body,
     };
     await createPostService(postData);
+    res.status(201).json({
+      success: true,
+      message: "Post created Successfully",
+    });
   } catch (error) {
     logger.error("Error while creating post", error);
     res.status(500).json({
