@@ -7,7 +7,7 @@ const { File, Console } = winston.transports;
 export const baseLogger: Logger = winston.createLogger({
   level: process.env.NODE_ENV === "production" ? "info" : "debug",
   format: combine(timestamp(), errors({ stack: true }), splat(), json()),
-  defaultMeta: { service: "Identity Service" },
+  defaultMeta: { service: "Post Service" },
   transports: [
     new Console({
       format: combine(colorize(), simple()),
