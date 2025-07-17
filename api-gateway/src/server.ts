@@ -7,8 +7,9 @@ import helmet from "helmet";
 import { requestLogger } from "./middleware/request-logger";
 import { logger } from "./utils/logger";
 import { errorHandler } from "./middleware/error-handler";
-import { indentityServiceProxy } from "./middleware/proxy";
+import { indentityServiceProxy, postServiceProxy } from "./middleware/proxy";
 import { rateLimiter } from "./middleware/rate-limiter";
+import { validateToken } from "./middleware/auth";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,8 @@ app.use(requestLogger);
 // Proxy setup for identity service
 app.use("/v1/auth/", indentityServiceProxy());
 
+app.use("/v1/posts", validateToken, postServiceProxy());
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
@@ -31,4 +34,5 @@ app.listen(PORT, () => {
   logger.info(
     `Identity Service is running on: ${process.env.INDENTITY_SERVICE_URI}`
   );
+  logger.info(`Post Service is running on: ${process.env.POST_SERVICE_URI}`);
 });

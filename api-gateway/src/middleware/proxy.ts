@@ -41,3 +41,30 @@ export const indentityServiceProxy = () => {
     },
   });
 };
+
+const postServiceUri = process.env.POST_SERVICE_URI;
+if (!postServiceUri) {
+  logger.error(`POST_SERVICE_URI missing from .env`);
+  throw new Error(`POST_SERVICE_URI missing from .env`);
+}
+
+export const postServiceProxy = () => {
+  return proxy(postServiceUri, {
+    ...proxyOptions,
+    proxyReqOptDecorator: (proxyReqOpts: RequestOptions, srcReq: Request) => {
+      proxyReqOpts.headers = {
+        ...(proxyReqOpts.headers || {}),
+        "Content-Type": "application/json",
+        "x-user-id": srcReq.user?.userId,
+      };
+      return proxyReqOpts;
+    },
+    userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
+      logger.info(`Response received from Post Service`, {
+        statusCode: proxyRes.statusCode,
+        path: userReq.originalUrl,
+      });
+      return proxyResData;
+    },
+  });
+};
