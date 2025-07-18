@@ -40,8 +40,33 @@ export const createPostController = async (
   }
 };
 
-const getAllPosts = async (req: Request, res: Response): Promise<void> => {
+export const getAllPosts = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
+    const cacheKey = `posts:${page}:${limit}`;
+    const cachedPosts = await req.redisClient?.get(cacheKey);
+    if (cachedPosts) {
+      res.json(JSON.parse(cachedPosts));
+      return;
+    }
+    const posts = await Post.find({})
+      .sort({ createdAt: -1 })
+      .skip(startIndex)
+      .limit(limit);
+    const total = await Post.countDocuments();
+    const result = {
+      posts,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalPosts: total,
+    };
+    await req.redisClient?.setex(cacheKey, 300, JSON.stringify(result));
+    res.json(result);
   } catch (error) {
     logger.error("Error while fetching all posts", error);
     res.status(500).json({
