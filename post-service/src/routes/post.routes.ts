@@ -2,7 +2,7 @@ import express from "express";
 import { authenticateRequest } from "../middleware/auth";
 import {
   createPostController,
-  getAllPosts,
+  getAllPostsController,
 } from "../controllers/post.controller";
 
 const router = express.Router();
@@ -11,6 +11,6 @@ router.use(authenticateRequest);
 
 router.post("/create-post", createPostController);
 
-router.get("/get-all-posts", getAllPosts);
+router.get("/", getAllPostsController);
 
 export default router;

@@ -45,7 +45,7 @@ export const createPostController = async (
   }
 };
 
-export const getAllPosts = async (
+export const getAllPostsController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
