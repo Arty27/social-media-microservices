@@ -11,6 +11,6 @@ router.use(authenticateRequest);
 
 router.post("/create-post", createPostController);
 
-router.post("/get-all-posts", getAllPosts);
+router.get("/get-all-posts", getAllPosts);
 
 export default router;

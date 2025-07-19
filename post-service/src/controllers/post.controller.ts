@@ -1,8 +1,13 @@
 import { Post } from "../models/Post";
-import { createPostService, ICreatePostInput } from "../services/post.service";
+import {
+  createPostService,
+  getAllPostsService,
+  ICreatePostInput,
+} from "../services/post.service";
 import { logger } from "../utils/logger";
 import { Request, Response } from "express";
 import { createPostValidation } from "../utils/validations";
+import { parsePaginationParams } from "../utils/helper";
 
 export const createPostController = async (
   req: Request,
@@ -45,28 +50,21 @@ export const getAllPosts = async (
   res: Response
 ): Promise<void> => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const startIndex = (page - 1) * limit;
-    const cacheKey = `posts:${page}:${limit}`;
-    const cachedPosts = await req.redisClient?.get(cacheKey);
-    if (cachedPosts) {
-      res.json(JSON.parse(cachedPosts));
+    logger.info("Get All posts endpoint hit");
+    const { page, limit } = parsePaginationParams(req);
+    if (!req.redisClient) {
+      logger.warn(`Redisclient missing for the request`, req.url);
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error: Redis not available",
+      });
       return;
     }
-    const posts = await Post.find({})
-      .sort({ createdAt: -1 })
-      .skip(startIndex)
-      .limit(limit);
-    const total = await Post.countDocuments();
-    const result = {
-      posts,
-      currentPage: page,
-      totalPages: Math.ceil(total / limit),
-      totalPosts: total,
-    };
-    await req.redisClient?.setex(cacheKey, 300, JSON.stringify(result));
-    res.json(result);
+    const result = await getAllPostsService(req.redisClient, page, limit);
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
   } catch (error) {
     logger.error("Error while fetching all posts", error);
     res.status(500).json({
