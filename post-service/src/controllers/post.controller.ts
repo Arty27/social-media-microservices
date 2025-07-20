@@ -9,6 +9,7 @@ import { Request, Response } from "express";
 import { createPostValidation } from "../utils/validations";
 import { parsePaginationParams } from "../utils/helper";
 
+// Controller used to create post
 export const createPostController = async (
   req: Request,
   res: Response
@@ -45,6 +46,7 @@ export const createPostController = async (
   }
 };
 
+// Controller to get all posts from cache or DB
 export const getAllPostsController = async (
   req: Request,
   res: Response

@@ -17,6 +17,7 @@ export const baseLogger: Logger = winston.createLogger({
   ],
 });
 
+// Adding custom divider to the logs to differentiate between requests
 export const logger: Logger & {
   divider: (char?: string, length?: number) => void;
 } = Object.assign(baseLogger, {

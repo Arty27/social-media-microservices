@@ -25,6 +25,7 @@ app.use(requestLogger);
 // Proxy setup for identity service
 app.use("/v1/auth/", indentityServiceProxy());
 
+// Proxy setup for Post Service
 app.use("/v1/posts", validateToken, postServiceProxy());
 
 app.use(errorHandler);

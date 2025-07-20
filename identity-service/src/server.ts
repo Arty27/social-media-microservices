@@ -34,6 +34,7 @@ app.use("/api/auth/register", sensitiveEndPointLimiter);
 // Routes
 app.use("/api/auth", identityRouter);
 
+// Global error handler
 app.use(errorHandler);
 
 app.listen(PORT, () => {
