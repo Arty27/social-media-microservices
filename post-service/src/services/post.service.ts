@@ -32,6 +32,7 @@ export const createPostService = async (
 
   await newPost.save();
   await invalidatePostCache(redisClient, newPost);
+  return newPost._id;
   logger.info(`Post Created successfully for user ${postData.user.userId}`);
 };
 

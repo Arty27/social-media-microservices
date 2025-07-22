@@ -36,10 +36,11 @@ export const createPostController = async (
       user: req.user,
       ...req.body,
     };
-    await createPostService(postData, redisClient);
+    const postId = await createPostService(postData, redisClient);
     res.status(201).json({
       success: true,
       message: "Post created Successfully",
+      id: postId,
     });
   } catch (error) {
     logger.error("Error while creating post", error);
