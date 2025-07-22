@@ -1,6 +1,7 @@
 import Redis from "ioredis";
 import { IPost, IPostDocument, Post } from "../models/Post";
 import { logger } from "../utils/logger";
+import { Request } from "express";
 
 export interface ICreatePostInput {
   content: string;
@@ -10,7 +11,17 @@ export interface ICreatePostInput {
   };
 }
 
-export const createPostService = async (postData: ICreatePostInput) => {
+async function invalidatePostCache(redisClient: Redis, input: IPostDocument) {
+  const keys = (await redisClient?.keys("posts:*")) || [];
+  if (keys.length > 0) {
+    await redisClient?.del(keys);
+  }
+}
+
+export const createPostService = async (
+  postData: ICreatePostInput,
+  redisClient: Redis
+) => {
   const { content, mediaIds, user } = postData;
 
   const newPost = new Post({
@@ -20,6 +31,7 @@ export const createPostService = async (postData: ICreatePostInput) => {
   });
 
   await newPost.save();
+  await invalidatePostCache(redisClient, newPost);
   logger.info(`Post Created successfully for user ${postData.user.userId}`);
 };
 
@@ -56,4 +68,22 @@ export const getAllPostsService = async (
   await redisClient.setex(cachedKey, 300, JSON.stringify(result));
   logger.info(`Cache Set`, { key: cachedKey });
   return result;
+};
+
+export const getPostByIdService = async (id: string, redisClient: Redis) => {
+  const cacheKey = `post:${id}`;
+  const cachedPost = await redisClient.get(cacheKey);
+  if (cachedPost) {
+    logger.info(`Fetching post from cache`, { id });
+    return JSON.parse(cachedPost);
+  }
+  const post = await Post.findById(id);
+  if (!post) {
+    logger.error(`No post found for the id`, { id });
+    throw new Error("Post not found!");
+  }
+  logger.info(`Returning post from Database`, { post: post });
+  logger.info(`Cache set`, { key: cacheKey });
+  await redisClient.setex(cacheKey, 600, JSON.stringify(post));
+  return post;
 };
