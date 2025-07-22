@@ -87,3 +87,19 @@ export const getPostByIdService = async (id: string, redisClient: Redis) => {
   await redisClient.setex(cacheKey, 600, JSON.stringify(post));
   return post;
 };
+
+export const deletePostService = async (
+  id: string,
+  redisClient: Redis
+): Promise<void> => {
+  logger.info(`Deleting Post from database`, { id });
+  const deletedPost = await Post.findByIdAndDelete(id);
+  if (!deletedPost) {
+    logger.error(`No Post found to delete`, { id });
+    throw new Error(`No Post found`);
+  }
+  const cacheKey = `post:${id}`;
+  logger.info(`Deleting post from cache`);
+  await redisClient.del(cacheKey);
+  await invalidatePostCache(redisClient, deletedPost);
+};

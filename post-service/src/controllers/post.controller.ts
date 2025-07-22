@@ -1,6 +1,7 @@
 import { Post } from "../models/Post";
 import {
   createPostService,
+  deletePostService,
   getAllPostsService,
   getPostByIdService,
   ICreatePostInput,
@@ -80,6 +81,14 @@ export const getPostByIdController = async (
   try {
     logger.info(`Get Post by ID endpoint Hit`);
     const { id } = req.params;
+    if (!id) {
+      logger.warn("Post ID missing in request params");
+      res.status(400).json({
+        success: false,
+        message: "Post ID is required",
+      });
+      return;
+    }
     const redisClient = checkForRedis(req);
     const result = await getPostByIdService(id, redisClient);
     res.status(200).json({
@@ -95,13 +104,34 @@ export const getPostByIdController = async (
   }
 };
 
-const deletePost = async (req: Request, res: Response): Promise<void> => {
+export const deletePostController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
+    logger.info(`Delete Post Endpoint hit`);
+    const { id } = req.params;
+    if (!id) {
+      logger.warn("Post ID missing in request params");
+      res.status(400).json({
+        success: false,
+        message: "Post ID is required",
+      });
+      return;
+    }
+    const redisClient = checkForRedis(req);
+    await deletePostService(id, redisClient);
+    res.status(200).json({
+      success: true,
+      message: "Post deleted Successfully",
+    });
   } catch (error) {
     logger.error("Error while deleting a post", error);
+
     res.status(500).json({
       success: false,
-      message: "Error while deleting a post",
+      message:
+        error instanceof Error ? error.message : "Error while deleting a post",
     });
   }
 };
