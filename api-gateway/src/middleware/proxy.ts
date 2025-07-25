@@ -68,3 +68,36 @@ export const postServiceProxy = () => {
     },
   });
 };
+
+const mediaServiceUri = process.env.MEDIA_SERVICE_URI;
+if (!mediaServiceUri) {
+  logger.error(`MEDIA_SERVICE_URI missing from .env`);
+  throw new Error(`MEDIA_SERVICE_URI missing from .env`);
+}
+
+export const mediaServiceProxy = () => {
+  return proxy(mediaServiceUri, {
+    ...proxyOptions,
+    proxyReqOptDecorator: (proxyReqOpts: RequestOptions, srcReq: Request) => {
+      console.log(srcReq.headers);
+      const contentType = srcReq.headers["content-type"]?.toLowerCase();
+      const isMultiPart = contentType?.startsWith("multipart/form-data");
+
+      proxyReqOpts.headers = {
+        ...(proxyReqOpts.headers || {}),
+        "x-user-id": srcReq.user?.userId,
+        ...(isMultiPart ? {} : { "Content-Type": "application/json" }),
+      };
+
+      return proxyReqOpts;
+    },
+    userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
+      logger.info(`Response received from Media Service`, {
+        statusCode: proxyRes.statusCode,
+        path: userReq.originalUrl,
+      });
+      return proxyResData;
+    },
+    parseReqBody: false,
+  });
+};

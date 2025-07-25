@@ -7,7 +7,11 @@ import helmet from "helmet";
 import { requestLogger } from "./middleware/request-logger";
 import { logger } from "./utils/logger";
 import { errorHandler } from "./middleware/error-handler";
-import { indentityServiceProxy, postServiceProxy } from "./middleware/proxy";
+import {
+  indentityServiceProxy,
+  mediaServiceProxy,
+  postServiceProxy,
+} from "./middleware/proxy";
 import { rateLimiter } from "./middleware/rate-limiter";
 import { validateToken } from "./middleware/auth";
 
@@ -28,6 +32,9 @@ app.use("/v1/auth/", indentityServiceProxy());
 // Proxy setup for Post Service
 app.use("/v1/posts", validateToken, postServiceProxy());
 
+// Proxy setup for Media Service
+app.use("/v1/media", validateToken, mediaServiceProxy());
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
@@ -36,4 +43,5 @@ app.listen(PORT, () => {
     `Identity Service is running on: ${process.env.INDENTITY_SERVICE_URI}`
   );
   logger.info(`Post Service is running on: ${process.env.POST_SERVICE_URI}`);
+  logger.info(`Media Service is running on: ${process.env.Media_SERVICE_URI}`);
 });
