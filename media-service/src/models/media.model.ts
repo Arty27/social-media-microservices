@@ -15,19 +15,19 @@ export interface IMediaDocument extends Document, IMedia {}
 const mediaSchema = new Schema<IMediaDocument>(
   {
     publicId: {
-      type: "string",
+      type: String,
       required: true,
     },
     originalName: {
-      type: "string",
+      type: String,
       required: true,
     },
     mimeType: {
-      type: "string",
+      type: String,
       required: true,
     },
     url: {
-      type: "string",
+      type: String,
       required: true,
     },
     userId: {
@@ -39,7 +39,7 @@ const mediaSchema = new Schema<IMediaDocument>(
   { timestamps: true }
 );
 
-export const Media: Model<IMediaDocument> = mongoose.model(
+export const Media: Model<IMediaDocument> = mongoose.model<IMediaDocument>(
   "Media",
   mediaSchema
 );
