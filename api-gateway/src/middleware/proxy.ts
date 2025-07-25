@@ -79,7 +79,6 @@ export const mediaServiceProxy = () => {
   return proxy(mediaServiceUri, {
     ...proxyOptions,
     proxyReqOptDecorator: (proxyReqOpts: RequestOptions, srcReq: Request) => {
-      console.log(srcReq.headers);
       const contentType = srcReq.headers["content-type"]?.toLowerCase();
       const isMultiPart = contentType?.startsWith("multipart/form-data");
 
