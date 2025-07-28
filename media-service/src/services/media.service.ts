@@ -39,7 +39,7 @@ export const mediaUploadService = async (
 
 export const getAllMediaService = async (): Promise<IMediaDocument[]> => {
   const result = await Media.find({}).sort({ createdAt: -1 });
-  if (!result) {
+  if (result.length === 0) {
     logger.error(`No media found in database`);
     throw new Error(`Failed to fetch media documents from database`);
   }
