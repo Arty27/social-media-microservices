@@ -3,7 +3,10 @@ import { logger } from "../utils/logger";
 import { uploadMediaToCloudinary } from "../utils/cloudinary";
 import { Media } from "../models/media.model";
 import multer from "multer";
-import { mediaUploadService } from "../services/media.service";
+import {
+  getAllMediaService,
+  mediaUploadService,
+} from "../services/media.service";
 
 export const uploadMediaController = async (
   req: Request,
@@ -43,6 +46,22 @@ export const uploadMediaController = async (
     });
   } catch (error) {
     logger.error("Error while uploading media", error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Internal server error",
+    });
+  }
+};
+
+export const getAllMediaController = async (req: Request, res: Response) => {
+  try {
+    const result = await getAllMediaService();
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    logger.error("Error while fetching all media", error);
     res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : "Internal server error",

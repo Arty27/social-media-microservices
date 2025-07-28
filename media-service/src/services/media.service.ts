@@ -36,3 +36,12 @@ export const mediaUploadService = async (
   logger.info(`Media details saved to database`, { mediaId: newMedia._id });
   return newMedia._id as mongoose.Types.ObjectId;
 };
+
+export const getAllMediaService = async () => {
+  const result = await Media.find({}).sort({ createdAt: -1 });
+  if (!result) {
+    logger.error(`Couldnot get all media from cloud`);
+    throw new Error(`Failed to get all Media from cloud`);
+  }
+  return result;
+};
