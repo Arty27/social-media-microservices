@@ -53,8 +53,12 @@ export const uploadMediaController = async (
   }
 };
 
-export const getAllMediaController = async (req: Request, res: Response) => {
+export const getAllMediaController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
+    logger.info(`Get all media endpoint hit`);
     const result = await getAllMediaService();
     res.status(200).json({
       success: true,

@@ -37,11 +37,11 @@ export const mediaUploadService = async (
   return newMedia._id as mongoose.Types.ObjectId;
 };
 
-export const getAllMediaService = async () => {
+export const getAllMediaService = async (): Promise<IMediaDocument[]> => {
   const result = await Media.find({}).sort({ createdAt: -1 });
   if (!result) {
-    logger.error(`Couldnot get all media from cloud`);
-    throw new Error(`Failed to get all Media from cloud`);
+    logger.error(`No media found in database`);
+    throw new Error(`Failed to fetch media documents from database`);
   }
   return result;
 };
