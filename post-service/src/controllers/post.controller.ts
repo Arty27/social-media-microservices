@@ -112,6 +112,7 @@ export const deletePostController = async (
   try {
     logger.info(`Delete Post Endpoint hit`);
     const { id } = req.params;
+    const userId = req.user?.userId;
     if (!id) {
       logger.warn("Post ID missing in request params");
       res.status(400).json({
@@ -120,8 +121,16 @@ export const deletePostController = async (
       });
       return;
     }
+    if (!userId) {
+      logger.error("UserId missing in request headers, Proxy Error");
+      res.status(500).json({
+        success: false,
+        message: "Internal Proxy Error",
+      });
+      return;
+    }
     const redisClient = checkForRedis(req);
-    await deletePostService(id, redisClient);
+    await deletePostService(id, redisClient, userId.toString());
     res.status(200).json({
       success: true,
       message: "Post deleted Successfully",

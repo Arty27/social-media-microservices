@@ -2,6 +2,7 @@ import Redis from "ioredis";
 import { IPost, IPostDocument, Post } from "../models/Post";
 import { logger } from "../utils/logger";
 import { Request } from "express";
+import { publishEvent } from "../utils/rabbitmq";
 
 export interface ICreatePostInput {
   content: string;
@@ -91,7 +92,8 @@ export const getPostByIdService = async (id: string, redisClient: Redis) => {
 
 export const deletePostService = async (
   id: string,
-  redisClient: Redis
+  redisClient: Redis,
+  userId: string
 ): Promise<void> => {
   logger.info(`Deleting Post from database`, { id });
   const deletedPost = await Post.findByIdAndDelete(id);
@@ -99,6 +101,11 @@ export const deletePostService = async (
     logger.error(`No Post found to delete`, { id });
     throw new Error(`No Post found`);
   }
+  await publishEvent(`post_deleted`, {
+    postId: id,
+    userId,
+    mediaIds: deletedPost.mediaIds,
+  });
   const cacheKey = `post:${id}`;
   logger.info(`Deleting post from cache`);
   await redisClient.del(cacheKey);

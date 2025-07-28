@@ -1,8 +1,8 @@
-import amqp from "amqplib";
+import amqp, { Channel } from "amqplib";
 import { logger } from "./logger";
 
 let connection = null;
-let channel = null;
+let channel: Channel | null = null;
 const EXCHANGE_NAME = "social_events";
 
 async function connectToRabbitMQ() {
@@ -16,5 +16,17 @@ async function connectToRabbitMQ() {
     logger.error("Error connecting to rabbit mq", error);
   }
 }
+
+export const publishEvent = async (routingKey: string, message: any) => {
+  if (!channel) {
+    await connectToRabbitMQ();
+  }
+  channel?.publish(
+    EXCHANGE_NAME,
+    routingKey,
+    Buffer.from(JSON.stringify(message))
+  );
+  logger.info(`Event published:${routingKey}`);
+};
 
 export default connectToRabbitMQ;
