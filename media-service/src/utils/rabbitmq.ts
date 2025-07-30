@@ -29,19 +29,32 @@ export const publishEvent = async (routingKey: string, message: any) => {
   logger.info(`Event published:${routingKey}`);
 };
 
-export const consumeEvent = async (routingKey: string, callback: any) => {
+export const consumeEvent = async <T = any>(
+  routingKey: string,
+  callback: (data: T) => void
+): Promise<void> => {
   if (!channel) {
     await connectToRabbitMQ();
   }
-  const q = await channel?.assertQueue("", { exclusive: true });
-  await channel?.bindQueue(q?.queue, EXCHANGE_NAME, routingKey);
-  channel?.consume(q?.queue, (msg) => {
+
+  const q = await channel!.assertQueue("", { exclusive: true });
+  await channel!.bindQueue(q.queue, EXCHANGE_NAME, routingKey);
+  channel!.prefetch(1);
+
+  channel!.consume(q.queue, (msg) => {
     if (msg !== null) {
-      const content = JSON.parse(msg.content.toString());
-      callback(content);
-      channel?.ack(msg);
+      try {
+        const content = JSON.parse(msg.content.toString());
+        logger.info(`Received message on ${routingKey}`, content);
+        callback(content);
+        channel!.ack(msg);
+      } catch (err) {
+        logger.error("Failed to parse message", err);
+        channel!.nack(msg, false, false); // discard bad message
+      }
     }
   });
+
   logger.info(`Subscribed to event ${routingKey}`);
 };
 
