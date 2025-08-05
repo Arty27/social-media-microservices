@@ -5,10 +5,10 @@ import { logger } from "../utils/logger";
 export interface PostDeletedEvent {
   mediaIds: string[];
   postId: string;
+  userId: string;
 }
 
 export const handlePostDeleted = async (event: PostDeletedEvent) => {
-  console.log(event, "EVEVEVE");
   const { postId, mediaIds } = event;
   try {
     const mediaToDelete = await Media.find({ _id: { $in: mediaIds } });
