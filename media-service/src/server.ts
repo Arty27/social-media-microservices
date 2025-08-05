@@ -9,7 +9,8 @@ import cors from "cors";
 import helmet from "helmet";
 import { logger } from "./utils/logger";
 import mediaRoutes from "./routes/media.routes";
-import connectToRabbitMQ from "./utils/rabbitmq";
+import connectToRabbitMQ, { consumeEvent } from "./utils/rabbitmq";
+import { handlePostDeleted } from "./event-handlers/media-event.handler";
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -29,6 +30,7 @@ app.use(errorHandler);
 async function startServer() {
   try {
     await connectToRabbitMQ();
+    await consumeEvent("post_deleted", handlePostDeleted);
     app.listen(PORT, () => {
       logger.info(`Media service running on port ${PORT}`);
     });
