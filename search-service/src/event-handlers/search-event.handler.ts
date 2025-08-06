@@ -8,6 +8,12 @@ export interface SearchPost {
   createdAt: Date;
 }
 
+export interface PostDeletedEvent {
+  mediaIds: string[];
+  postId: string;
+  userId: string;
+}
+
 export const handlePostCreated = async (event: SearchPost) => {
   try {
     const { postId, userId, content, createdAt } = event;
@@ -23,5 +29,15 @@ export const handlePostCreated = async (event: SearchPost) => {
     );
   } catch (error) {
     logger.error("Error handling Search creation", error);
+  }
+};
+
+export const handlePostDeleted = async (event: PostDeletedEvent) => {
+  try {
+    const { postId } = event;
+    await Search.findOneAndDelete({ postId });
+    logger.info(`Search Post deleted`, { postId });
+  } catch (error) {
+    logger.error("Search Service: Error while deleting Search", error);
   }
 };

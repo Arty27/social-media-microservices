@@ -36,7 +36,7 @@ app.use("/v1/posts", validateToken, postServiceProxy());
 // Proxy setup for Media Service
 app.use("/v1/media", validateToken, mediaServiceProxy());
 
-// Proxy setup for Media Service
+// Proxy setup for search Service
 app.use("/v1/search", validateToken, searchServiceProxy());
 
 app.use(errorHandler);
