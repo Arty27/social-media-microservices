@@ -11,6 +11,7 @@ import {
   indentityServiceProxy,
   mediaServiceProxy,
   postServiceProxy,
+  searchServiceProxy,
 } from "./middleware/proxy";
 import { rateLimiter } from "./middleware/rate-limiter";
 import { validateToken } from "./middleware/auth";
@@ -35,6 +36,9 @@ app.use("/v1/posts", validateToken, postServiceProxy());
 // Proxy setup for Media Service
 app.use("/v1/media", validateToken, mediaServiceProxy());
 
+// Proxy setup for Media Service
+app.use("/v1/search", validateToken, searchServiceProxy());
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
@@ -43,5 +47,8 @@ app.listen(PORT, () => {
     `Identity Service is running on: ${process.env.INDENTITY_SERVICE_URI}`
   );
   logger.info(`Post Service is running on: ${process.env.POST_SERVICE_URI}`);
-  logger.info(`Media Service is running on: ${process.env.Media_SERVICE_URI}`);
+  logger.info(`Media Service is running on: ${process.env.MEDIA_SERVICE_URI}`);
+  logger.info(
+    `Search Service is running on: ${process.env.SEARCH_SERVICE_URI}`
+  );
 });

@@ -2,6 +2,7 @@ import { NextFunction, Response, Request } from "express";
 import proxy, { ProxyOptions } from "express-http-proxy";
 import { logger } from "../utils/logger";
 import { RequestOptions } from "http";
+import { validateToken } from "./auth";
 
 const proxyOptions: ProxyOptions = {
   proxyReqPathResolver: (req: Request) => {
@@ -98,5 +99,32 @@ export const mediaServiceProxy = () => {
       return proxyResData;
     },
     parseReqBody: false,
+  });
+};
+
+const searchServiceUri = process.env.SEARCH_SERVICE_URI;
+if (!searchServiceUri) {
+  logger.error(`SEARCH_SERVICE_URI missing from .env`);
+  throw new Error(`SEARCH_SERVICE_URI missing from .env`);
+}
+
+export const searchServiceProxy = () => {
+  return proxy(searchServiceUri, {
+    ...proxyOptions,
+    proxyReqOptDecorator: (proxyReqOpts: RequestOptions, srcReq: Request) => {
+      proxyReqOpts.headers = {
+        ...(proxyReqOpts.headers || {}),
+        "Content-Type": "application/json",
+        "x-user-id": srcReq.user?.userId,
+      };
+      return proxyReqOpts;
+    },
+    userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
+      logger.info(`Response received from Search Service`, {
+        statusCode: proxyRes.statusCode,
+        path: userReq.originalUrl,
+      });
+      return proxyResData;
+    },
   });
 };

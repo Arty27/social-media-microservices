@@ -22,13 +22,14 @@ app.use(express.json());
 
 app.use(requestLogger);
 
-app.use("/api", searchRoutes);
+app.use("/api/search", searchRoutes);
 
 app.use(errorHandler);
 
 async function startServer() {
   try {
     await connectToRabbitMQ();
+    await connectToDb();
     await consumeEvent("post_created", handlePostCreated);
     app.listen(PORT, () => {
       logger.info(`Search service running on port ${PORT}`);

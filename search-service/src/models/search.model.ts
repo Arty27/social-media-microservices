@@ -19,7 +19,7 @@ const searchSchema = new Schema<ISearchDocument>(
     userId: {
       type: String,
       required: true,
-      unique: true,
+      index: true,
     },
     content: {
       type: String,
