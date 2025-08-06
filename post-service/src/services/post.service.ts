@@ -33,8 +33,16 @@ export const createPostService = async (
 
   await newPost.save();
   await invalidatePostCache(redisClient, newPost);
-  return newPost._id;
+  const postId = newPost._id;
   logger.info(`Post Created successfully for user ${postData.user.userId}`);
+  await publishEvent("post_created", {
+    postId,
+    userId: newPost.user,
+    content: newPost.content,
+    createdAt: newPost.createdAt,
+  });
+
+  return postId;
 };
 
 export const getAllPostsService = async (

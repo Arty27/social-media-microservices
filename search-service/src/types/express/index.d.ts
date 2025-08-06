@@ -1,5 +1,6 @@
 import Redis from "ioredis";
 import mongoose from "mongoose";
+import { Request } from "express";
 
 declare global {
   namespace Express {

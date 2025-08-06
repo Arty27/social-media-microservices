@@ -11,6 +11,7 @@ import { requestLogger } from "./middleware/request-logger";
 import { attachRedisClient } from "./middleware/attach-redis-client";
 import { connectToRabbitMQ, consumeEvent } from "./utils/rabbitmq";
 import searchRoutes from "./routes/search.routes";
+import { handlePostCreated } from "./event-handlers/search-event.handler";
 
 const app = express();
 const PORT = process.env.PORT || 3004;
@@ -28,12 +29,12 @@ app.use(errorHandler);
 async function startServer() {
   try {
     await connectToRabbitMQ();
-
+    await consumeEvent("post_created", handlePostCreated);
     app.listen(PORT, () => {
-      logger.info(`Media service running on port ${PORT}`);
+      logger.info(`Search service running on port ${PORT}`);
     });
   } catch (error) {
-    logger.error("Failed to connect to server", error);
+    logger.error("Failed to start Search Service", error);
     process.exit(1);
   }
 }

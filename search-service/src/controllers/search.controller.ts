@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { logger } from "../utils/logger";
 import { Search } from "../models/search.model";
+import { searchPostService } from "../services/search.service";
 
 export const searchPostController = async (
   req: Request,
@@ -17,17 +18,7 @@ export const searchPostController = async (
       });
       return;
     }
-    const results = await Search.find(
-      {
-        $text: { $search: query.toString() },
-      },
-      {
-        score: { $meta: "textScore" },
-      }
-    )
-      .sort({ score: { $meta: "textScore" } })
-      .limit(10);
-
+    const results = await searchPostService(query.toString());
     res.status(200).json({
       success: true,
       data: results,
