@@ -10,7 +10,7 @@ import { connectToDb } from "./config/db";
 import { requestLogger } from "./middleware/request-logger";
 import { attachRedisClient } from "./middleware/attach-redis-client";
 import { connectToRabbitMQ, consumeEvent } from "./utils/rabbitmq";
-import searchRoutes from "./controllers/search.controller";
+import searchRoutes from "./routes/search.routes";
 
 const app = express();
 const PORT = process.env.PORT || 3004;
